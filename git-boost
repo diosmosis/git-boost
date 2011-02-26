@@ -1,0 +1,186 @@
+#!/bin/sh
+# NOTE: Everything but the diff & diff-ar commands are tested.
+# git-boost init
+# git-boost clone <<library-name>>
+# git-boost diff <<library-name>>
+# git-boost diff-ar <<library-name>>
+# git-boost update <<library-name>>
+# git-boost start <<library-name>>
+
+if [ "$#" = "0" -o "$1" = "help" ]; then
+    echo "git-boost usage: git-boost <<operation>> <<library-name>> [other-args]"
+    echo "operations:"
+    echo "  init: init a modular, gitted boost (library name not necessary)"
+    echo "  clone: checkout a library using git-svn"
+    echo "  update: update a library. To update auxillary components supply '_' for the library name."
+    echo "  start: start work on a ticket. Creates and checks out a new branch."
+    echo "         Supply '_' for the library name to work on auxillary components."
+    echo "  end: ends work on a ticket. Deletes branches without merging back to master."
+    echo "       Supply '_' for the library name to work on auxillary components."
+    echo "  diff: create a patch to stdout for the given library & its libs dir."
+    echo "        To diff auxillary components supply '_' for the library name."
+    echo "  diff-ar: create patches and archive them."
+    exit
+fi
+
+operation=$1
+
+if [ "$1" = "init" ]; then
+    if [ -d "boost" -o -d "tools" ]; then
+        echo "ERROR: 'boost' or 'tools' directory already exists. Remove them first."
+        exit 1
+    fi
+
+    mkdir boost
+
+    git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/tools"
+
+    curl "http://svn.boost.org/svn/boost/trunk/boost-build.jam" > boost-build.jam
+    curl "http://svn.boost.org/svn/boost/trunk/Jamroot" > Jamroot
+    #curl "http://svn.boost.org/svn/boost/trunk/project-config.jam" > project-config.jam
+    curl "http://svn.boost.org/svn/boost/trunk/bootstrap.sh" > bootstrap.sh
+    curl "http://svn.boost.org/svn/boost/trunk/bootstrap.bat" > bootstrap.bat
+
+    exit
+fi
+
+if [ "$#" -eq "1" ]; then
+    echo "ERROR: the '$1' option requires a library name"
+    exit 1
+fi
+
+libraryname=$2
+
+README="To apply:
+- Apply headers.patch to boost/$libraryname
+- Apply libs.patch to libs/$libraryname
+
+Summary of changes made to boost/$libraryname:
+"
+
+README_INBETWEEN="
+
+Summary of changes made to libs/$libraryname:
+"
+
+TOOLSREADME="To apply:
+- Apply tools.patch to ./tools directory.
+
+Summary of changes made:
+"
+
+if [ "$operation" = "clone" ]; then
+    if [ -d "$libraryname" ]; then
+        echo "ERROR: folder for library already exists"
+        exit 1
+    fi
+
+    mkdir $libraryname
+    mkdir $libraryname/include
+    mkdir $libraryname/include/boost
+    mkdir $libraryname/include/boost/$libraryname
+    mkdir $libraryname/libs
+
+    echo "cloning $libraryname's headers"
+    git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/boost/$libraryname" "$libraryname/include/boost/$libraryname"
+    echo "cloning $libraryname's other files"
+    git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/libs/$libraryname" "$libraryname/libs"
+
+    ln -s ../$libraryname/include/boost/$libraryname boost/$libraryname
+elif [ "$operation" = "update" ]; then
+    if [ "$libraryname" = "_" ]; then
+        echo "updating tools"
+        cd tools
+        git svn fetch
+        cd ..
+    else
+        echo "updating $libraryname's headers"
+        cd $libraryname/include/boost/$libraryname
+        git svn fetch
+        echo "updating $libraryname's other files"
+        cd ../../../libs
+        git svn fetch
+        cd ..
+    fi
+elif [ "$operation" = "start" ]; then
+    if [ "$libraryname" = "_" ]; then
+        cd tools
+        git checkout -b devel
+        cd ..
+    else
+        cd $libraryname/include/boost/$libraryname
+        git checkout -b devel
+        cd ../../../libs
+        git checkout -b devel
+        cd ..
+    fi
+    echo "created branches"
+elif [ "$operation" = "end" ]; then
+    $ANSWER=""
+    
+    while [ "$ANSWER" != "y" -a "$ANSWER" != "n" ]
+    do
+        echo "Are you sure? This will permanently delete changes made. Enter 'y' or 'n'."
+        read ANSWER
+    done
+    
+    if [ "$ANSWER" = "n" ]; then
+        echo "ABORTED"
+        exit 1
+    fi
+
+    if [ "$libraryname" = "_" ]; then
+        cd tools
+        git reset --hard HEAD
+        git checkout master
+        git branch -d devel
+        cd ..
+    else
+        cd $libraryname/include/boost/$libraryname
+        git reset --hard HEAD
+        git checkout master
+        git branch -d devel
+        cd ../../../libs
+        git reset --hard HEAD
+        git checkout master
+        git branch -d devel
+        cd ..
+    fi
+    
+    echo "branches deleted"
+elif [ "$operation" = "diff" -o "$operation" = "diff-ar" ]; then
+    if [ "$libraryname" = "_" ]; then
+        svn diff tools > tools.patch
+        echo "$TOOLSREADME" > README_base
+        cd tools
+        git log "--pretty=oneline" master..devel | cat README_base - > README
+        cd ..
+    else
+        svn diff $libraryname/include/boost/$libraryname > headers.patch
+        svn diff $libraryname/libs > libs.patch
+
+        echo "$README" > README_base
+        echo "$README_INBETWEEN" > README_3
+        cd $libraryname/include/boost/$libraryname
+        git log "--pretty=oneline" master..devel | cat README_base - README_INBETWEEN > README_2
+        cd ../../../libs
+        git log "--pretty=oneline" master..devel | cat README_2 - > README
+        cd ..
+    fi
+
+    rm "README_*"
+
+    if [ "$operation" = "diff-ar" ]; then
+        if [ "$libraryname" = "_" ]; then
+            tar -cvjf patch.tar.bz2 tools.patch README
+            rm tools.patch README
+        else
+            tar -cvjf patch.tar.bz2 headers.patch libs.patch README
+            rm headers.patch libs.patch README
+        fi
+    fi
+else
+    echo "ERROR: unknown operation '$operation'"
+    exit 1
+fi
+
