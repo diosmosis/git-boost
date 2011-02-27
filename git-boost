@@ -25,18 +25,7 @@ fi
 
 operation=$1
 
-if [ "$1" = "init" ]; then
-    if [ -d "boost" -o -d "tools" ]; then
-        echo "ERROR: 'boost' or 'tools' directory already exists. Remove them first."
-        exit 1
-    fi
-
-    mkdir boost
-    mkdir boost/detail
-    mkdir libs
-
-    git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/tools"
-
+function get_non_modular_files {
     curl "http://svn.boost.org/svn/boost/trunk/boost-build.jam" > boost-build.jam
     curl "http://svn.boost.org/svn/boost/trunk/Jamroot" > Jamroot
     curl "http://svn.boost.org/svn/boost/trunk/boostcpp.jam" > boostcpp.jam
@@ -48,8 +37,90 @@ if [ "$1" = "init" ]; then
     curl "http://svn.boost.org/svn/boost/trunk/boost/config.hpp" > boost/config.hpp
     curl "http://svn.boost.org/svn/boost/trunk/boost/python.hpp" > boost/python.hpp
     curl "http://svn.boost.org/svn/boost/trunk/boost/type.hpp" > boost/type.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/static_assert.hpp" > boost/static_assert.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/ref.hpp" > boost/ref.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/operators.hpp" > boost/operators.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/static_assert.hpp" > boost/static_assert.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/utility.hpp" > boost/utility.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/assert.hpp" > boost/assert.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/integer.hpp" > boost/integer.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/throw_exception.hpp" > boost/throw_exception.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/function_equal.hpp" > boost/function_equal.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/mem_fn.hpp" > boost/mem_fn.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/current_function.hpp" > boost/current_function.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/integer_fwd.hpp" > boost/integer_fwd.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/integer_traits.hpp" > boost/integer_traits.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/limits.hpp" > boost/limits.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/cstdint.hpp" > boost/cstdint.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/get_pointer.hpp" > boost/get_pointer.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/checked_delete.hpp" > boost/checked_delete.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/next_prior.hpp" > boost/next_prior.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/noncopyable.hpp" > boost/noncopyable.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/iterator.hpp" > boost/iterator.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/shared_ptr.hpp" > boost/shared_ptr.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/shared_array.hpp" > boost/shared_array.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/unordered_set.hpp" > boost/unordered_set.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/scoped_ptr.hpp" > boost/scoped_ptr.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/implicit_cast.hpp" > boost/implicit_cast.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/compressed_pair.hpp" > boost/compressed_pair.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/call_traits.hpp" > boost/call_traits.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/aligned_storage.hpp" > boost/aligned_storage.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/swap.hpp" > boost/swap.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/bind.hpp" > boost/bind.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/lexical_cast.hpp" > boost/lexical_cast.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/type_traits.hpp" > boost/type_traits.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/is_placeholder.hpp" > boost/is_placeholder.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/visit_each.hpp" > boost/visit_each.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/memory_order.hpp" > boost/memory_order.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/concept_check.hpp" > boost/concept_check.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/concept_archetype.hpp" > boost/concept_archetype.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/multi_index_container.hpp" > boost/multi_index_container.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/multi_index_container_fwd.hpp" > boost/multi_index_container_fwd.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/optional.hpp" > boost/optional.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/none.hpp" > boost/none.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/none_t.hpp" > boost/none_t.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/unordered_map.hpp" > boost/unordered_map.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/cast.hpp" > boost/cast.hpp
+
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/indirect_traits.hpp" > boost/detail/indirect_traits.hpp
     curl "http://svn.boost.org/svn/boost/trunk/boost/detail/templated_streams.hpp" > boost/detail/templated_streams.hpp
     curl "http://svn.boost.org/svn/boost/trunk/boost/detail/workaround.hpp" > boost/detail/workaround.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/is_xxx.hpp" > boost/detail/is_xxx.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/sp_typeinfo.hpp" > boost/detail/sp_typeinfo.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/no_exceptions_support.hpp" > boost/detail/no_exceptions_support.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/iterator.hpp" > boost/detail/iterator.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/compressed_pair.hpp" > boost/detail/compressed_pair.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/call_traits.hpp" > boost/detail/call_traits.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/lcast_precision.hpp" > boost/detail/lcast_precision.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/binary_search.hpp" > boost/detail/binary_search.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/allocator_utilities.hpp" > boost/detail/allocator_utilities.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/container_fwd.hpp" > boost/detail/container_fwd.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/reference_content.hpp" > boost/detail/reference_content.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/select_type.hpp" > boost/detail/select_type.hpp
+    
+    curl "http://svn.boost.org/svn/boost/trunk/boost/pending/queue.hpp" > boost/pending/queue.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/pending/property.hpp" > boost/pending/property.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/pending/cstddef.hpp" > boost/pending/cstddef.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/pending/container_traits.hpp" > boost/pending/container_traits.hpp
+
+    curl "http://svn.boost.org/svn/boost/trunk/boost/pending/detail/property.hpp" > boost/pending/detail/property.hpp
+}
+
+if [ "$1" = "init" ]; then
+    if [ -d "boost" -o -d "tools" ]; then
+        echo "ERROR: 'boost' or 'tools' directory already exists. Remove them first."
+        exit 1
+    fi
+
+    mkdir boost
+    mkdir boost/detail
+    mkdir boost/pending
+    mkdir boost/pending/detail
+    mkdir libs
+
+    git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/tools"
+
+    get_non_modular_files
 
     exit
 fi
@@ -104,6 +175,8 @@ elif [ "$operation" = "update" ]; then
         cd tools
         git svn fetch
         cd ..
+
+        get_non_modular_files
     else
         echo "updating $libraryname's headers"
         cd $libraryname/include/boost/$libraryname
