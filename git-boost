@@ -32,6 +32,7 @@ if [ "$1" = "init" ]; then
     fi
 
     mkdir boost
+    mkdir boost/detail
     mkdir libs
 
     git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/tools"
@@ -41,6 +42,13 @@ if [ "$1" = "init" ]; then
     curl "http://svn.boost.org/svn/boost/trunk/boostcpp.jam" > boostcpp.jam
     curl "http://svn.boost.org/svn/boost/trunk/bootstrap.sh" > bootstrap.sh
     curl "http://svn.boost.org/svn/boost/trunk/bootstrap.bat" > bootstrap.bat
+
+    curl "http://svn.boost.org/svn/boost/trunk/boost/blank.hpp" > boost/blank.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/blank_fwd.hpp" > boost/blank_fwd.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/config.hpp" > boost/config.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/python.hpp" > boost/python.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/templated_streams.hpp" > boost/detail/templated_streams.hpp
+    curl "http://svn.boost.org/svn/boost/trunk/boost/detail/workaround.hpp" > boost/detail/workaround.hpp
 
     exit
 fi
