@@ -32,6 +32,7 @@ if [ "$1" = "init" ]; then
     fi
 
     mkdir boost
+    mkdir libs
 
     git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/tools"
 
@@ -87,6 +88,7 @@ if [ "$operation" = "clone" ]; then
     git svn clone --revision HEAD "http://svn.boost.org/svn/boost/trunk/libs/$libraryname" "$libraryname/libs"
 
     ln -s ../$libraryname/include/boost/$libraryname boost/$libraryname
+    ln -s ../$libraryname/libs libs/$libraryname
 elif [ "$operation" = "update" ]; then
     if [ "$libraryname" = "_" ]; then
         echo "updating tools"
