@@ -37,7 +37,7 @@ if [ "$1" = "init" ]; then
 
     curl "http://svn.boost.org/svn/boost/trunk/boost-build.jam" > boost-build.jam
     curl "http://svn.boost.org/svn/boost/trunk/Jamroot" > Jamroot
-    #curl "http://svn.boost.org/svn/boost/trunk/project-config.jam" > project-config.jam
+    curl "http://svn.boost.org/svn/boost/trunk/boostcpp.jam" > boostcpp.jam
     curl "http://svn.boost.org/svn/boost/trunk/bootstrap.sh" > bootstrap.sh
     curl "http://svn.boost.org/svn/boost/trunk/bootstrap.bat" > bootstrap.bat
 
