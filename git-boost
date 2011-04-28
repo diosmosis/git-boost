@@ -25,7 +25,7 @@ fi
 
 operation=$1
 
-function get_non_modular_files {
+get_non_modular_files () {
     curl "http://svn.boost.org/svn/boost/trunk/boost-build.jam" > boost-build.jam
     curl "http://svn.boost.org/svn/boost/trunk/Jamroot" > Jamroot
     curl "http://svn.boost.org/svn/boost/trunk/boostcpp.jam" > boostcpp.jam
